@@ -1,6 +1,6 @@
 import { Button, Flex, Text } from "@chakra-ui/react";
 
-export function Header() {
+export function Butto() {
   return (
     <Button>
       <Text>button here</Text>
