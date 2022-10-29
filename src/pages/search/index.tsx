@@ -19,7 +19,11 @@ import axios from "axios";
 import { useState } from "react";
 import { Header } from "../../components/header";
 
-interface Idata {
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+
+export interface Idata {
   bairro: string;
   cep: string;
   complemento: string;
@@ -35,23 +39,46 @@ interface Idata {
 export function Search() {
   const [search, setSearch] = useState<string>("");
   const [data, setData] = useState<Idata>();
-
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  async function handleSearch() {
-    const client = axios.create({
-      baseURL: "https://viacep.com.br/ws/",
-    });
+  const navigate = useNavigate();
 
-    const response = await client.get(`08253010/json`);
-    console.log(response.data);
-    setData(response.data);
-    onOpen();
+  async function handleSearch(evt: any) {
+    evt.preventDefault();
+    try {
+      const client = axios.create({
+        baseURL: "https://viacep.com.br/ws/",
+      });
+      const response = await client.get(`${search}/json`);
+
+      if (response.data?.erro) {
+        toast.error("CEP não encontrado", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+        });
+      } else {
+        setData(response.data);
+        onOpen();
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  function cleanForm(){
+    setSearch("")
   }
 
   return (
     <Flex bg={"gray.300"} w={"100%"} flexDir={"column"} h={"100vh"}>
       <Header />
+      <ToastContainer />
       <Box
         alignItems={"center"}
         display={"flex"}
@@ -63,21 +90,29 @@ export function Search() {
         <Text fontWeight={"bold"} fontSize={"2xl"} mb={5}>
           Buscar endereço por Cep
         </Text>
-        <FormControl w={"80%"} flexDir={"column"} display={"flex"}>
+        {/* <Flex w={"80%"} flexDir={"column"} display={"flex"} > */}
+        <form action="">
           <FormLabel>CEP</FormLabel>
           <Input
             type="text"
             w={"10rem"}
             maxLength={8}
+            value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <Flex>
-            {search && <Button type="reset">limpar</Button>}
-            <Button type="submit" onClick={handleSearch}>
+            {search && <Button type="reset" onClick={()=> cleanForm()}>limpar</Button>}
+            <Button
+              type="submit"
+              disabled={!search.match(/^[0-9]{8}/)}
+              onClick={(e) => handleSearch(e)}
+            >
               Pesquisar
             </Button>
           </Flex>
-        </FormControl>
+        </form>
+        {/* </Flex> */}
+        <Button onClick={() => navigate("/")}>Voltar</Button>
       </Box>
 
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -86,11 +121,13 @@ export function Search() {
           <ModalHeader>Dados obtidos</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text>Logradouro: {data?.logradouro}</Text>
-            <Text>Bairro: {data?.bairro}</Text>
-            <Text>Cep: {data?.cep}</Text>
-            <Text>Localidade: {data?.localidade}</Text>
-            <Text>UF: {data?.uf}</Text>
+            <Text mb={2}>Logradouro: {data?.logradouro}</Text>
+            <Text mb={2}>Bairro: {data?.bairro}</Text>
+            <Text mb={2}>Cep: {data?.cep}</Text>
+            <Text mb={2}>Localidade: {data?.localidade}</Text>
+            <Text mb={2}>UF: {data?.uf}</Text>
+            <Text mb={2}>Complemento: {data?.complemento}</Text>
+            <Text mb={2}>IBGE: {data?.ibge}</Text>
           </ModalBody>
         </ModalContent>
       </Modal>

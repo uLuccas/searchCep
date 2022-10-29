@@ -16,6 +16,7 @@ export function Home() {
         flexDir={"column"}
         justifyContent={"space-around"}
       >
+ 
         <Text>
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Non,
           recusandae sint. Fugit doloremque inventore nemo harum nam totam est
@@ -23,7 +24,7 @@ export function Home() {
         </Text>
         <Flex w={'50%'} justifyContent={"space-around"}>
           <Button onClick={()=> navigate("/search")}>Buscar por Cep</Button>
-          <Button>Buscar por endereço</Button>
+          <Button onClick={()=> navigate("/searchAddress")}>Buscar por endereço</Button>
         </Flex>
       </Box>
     </Flex>
