@@ -1,6 +1,5 @@
-import { Flex, Text, Box, Button } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
-import { ButtonCustom } from "../../components/button";
+import { Flex, Text, Box } from "@chakra-ui/react";
+import { ButtonCustom, buttonStyle } from "../../components/button";
 import { Header } from "../../components/header";
 
 export function Home() {
@@ -22,11 +21,12 @@ export function Home() {
         </Text>
         <Text fontSize={"2xl"}>
           Aqui você pode procurar o CEP de qualquer região do país de maneira
-          rapida e fácil. Vamos lá?
+          rapida e fácil.
+          <br></br> Vamos lá?
         </Text>
         <Flex w={"50%"} justifyContent={"space-around"}>
-          <ButtonCustom title="Buscar por CEP" redirect="search" />
-          <ButtonCustom title="Encontrar Cep" redirect="searchAddress" />
+          <ButtonCustom style={{...buttonStyle, bg: "#ff7900"}} title="Buscar por CEP" redirect="search" />
+          <ButtonCustom style={{...buttonStyle, bg: "#ff7900"}} title="Encontrar CEP" redirect="searchAddress" />
         </Flex>
       </Box>
     </Flex>
