@@ -144,7 +144,7 @@ export function SearchByAddress() {
         h={"90%"}
       >
         <Text fontWeight={"bold"} fontSize={"2xl"}>
-          Buscar endereço por Endereço
+          Buscar CEP
         </Text>
 
         <form action="">
