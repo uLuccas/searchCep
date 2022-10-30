@@ -13,6 +13,13 @@ import {
   ModalCloseButton,
   useDisclosure,
   Select,
+  TableContainer,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -48,10 +55,12 @@ interface IDataCounty {
 
 export function SearchByAddress() {
   const [search, setSearch] = useState<ISearchAddress>();
-  const [data, setData] = useState<Idata>();
+  const [data, setData] = useState<Idata[]>();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [states, setStates] = useState<IDataState[]>([]);
   const [county, setCounty] = useState<IDataCounty[]>();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const regValidation = /^[\w'\-,.][^0-9_!¡?÷?¿\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$/;
 
   async function handleSearch() {
     try {
@@ -62,9 +71,9 @@ export function SearchByAddress() {
         `/${search?.state}/${search?.county}/${search?.address}/json/`
       );
       console.log(response.data);
-      
-      if (response.data?.erro) {
-        toast.error("CEP não encontrado", {
+
+      if (response.data?.erro || !response.data.length || !response.data[0].logradouro) {
+        toast.error("Endereço não localizado!", {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
@@ -75,8 +84,8 @@ export function SearchByAddress() {
           theme: "dark",
         });
       } else {
-        setData(response.data[0]);
-        onOpen();
+        setData(response.data);
+        setIsOpen(true);
       }
     } catch (e) {
       console.log(e);
@@ -90,7 +99,7 @@ export function SearchByAddress() {
       });
       const response = await client.get(`/estados?orderBy=nome`);
       if (response.data?.erro) {
-        toast.error("CEP não encontrado", {
+        toast.error("Estados não localizados", {
           position: "top-right",
           autoClose: 5000,
           hideProgressBar: false,
@@ -101,10 +110,8 @@ export function SearchByAddress() {
           theme: "dark",
         });
       } else {
-        setData(response.data);
-        onOpen();
+        setStates(response.data);
       }
-      setStates(response.data);
     } catch (e) {
       console.log(e);
       toast.warn("Erro interno de servidor :/", {
@@ -125,7 +132,6 @@ export function SearchByAddress() {
         baseURL: "https://servicodados.ibge.gov.br/api/v1/localidades/estados/",
       });
       const response = await client.get(`${search?.state}/municipios`);
-      console.log(response);
       setCounty(response.data);
     } catch (e) {
       console.log(e);
@@ -136,6 +142,9 @@ export function SearchByAddress() {
     setCounty([]);
   }
 
+  function closeModal() {
+    setIsOpen(false);
+  }
   useEffect(() => {
     if (!states.length) getStates();
     if (search?.state && !search.county) getCounty();
@@ -165,8 +174,14 @@ export function SearchByAddress() {
           <Text fontWeight={"bold"} color="#ff7900" fontSize={"2xl"}>
             Encontre seu CEP
           </Text>
-          <Text fontWeight={"medium"} color="#f5f5f5" fontSize={"inherit"} mb={5}>
-            Por favor, selecione um estado, município e nos informe um logradouro para que possamos encontrar seu CEP. 
+          <Text
+            fontWeight={"medium"}
+            color="#f5f5f5"
+            fontSize={"inherit"}
+            mb={5}
+          >
+            Por favor, selecione um estado, município e nos informe um
+            logradouro para que possamos encontrar seu CEP.
           </Text>
 
           <Flex flexDir={"column"} color="#f9f6f4" w={"75%"}>
@@ -176,12 +191,13 @@ export function SearchByAddress() {
               placeholder="Selecione um estado"
               _hover={{ borderColor: "#ff7900" }}
               size={"md"}
-              onChange={(e) =>
+              onChange={(e) => {
                 setSearch((oldState) => ({
                   ...oldState,
                   state: e.target.value,
-                }))
-              }
+                }));
+                setCounty([])
+              }}
             >
               {states &&
                 states.map((item) => (
@@ -267,7 +283,7 @@ export function SearchByAddress() {
                 w: ["100%", "34%"],
               }}
               type="submit"
-              disabled={!search?.address}
+              disabled={search?.address?.match(regValidation) ? false : true}
               onClick={handleSearch}
             >
               Pesquisar
@@ -277,37 +293,42 @@ export function SearchByAddress() {
         </Flex>
       </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
-        <ModalContent color={"#f5f5f5"}>
+        <ModalContent color={"#f5f5f5"} minW={[400, 500, 700]} h={500}>
           <ModalHeader color={"#ff7900"} fontWeight={"bold"}>
             Resultado da pesquisa
           </ModalHeader>
           <ModalCloseButton color={"#ff7900"} />
           <ModalBody>
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              Logradouro: {data?.logradouro}
-            </Text>
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              Bairro: {data?.bairro}
-            </Text>
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              CEP: {data?.cep}
-            </Text>
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              Localidade: {data?.localidade}
-            </Text>
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              UF: {data?.uf}
-            </Text>
-            {data?.complemento && (
-              <Text mb={2} fontWeight={"medium"} fontSize={17}>
-                Complemento: {data?.complemento}
-              </Text>
-            )}
-            <Text mb={2} fontWeight={"medium"} fontSize={17}>
-              IBGE: {data?.ibge}
-            </Text>
+            <TableContainer
+              overflowY={"scroll"}
+              height={["260px", "400px"]}
+              minW={["none", 400, "auto"]}
+              style={{
+                WebkitScrollSnapType: "none",
+              }}
+            >
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th color={"#ff7900"}>Logradouro</Th>
+                    <Th color={"#ff7900"}>CEP</Th>
+                    <Th color={"#ff7900"}>Bairro</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {data &&
+                    data.map((item, idx) => (
+                      <Tr key={idx}>
+                        <Td>{item.logradouro}</Td>
+                        <Td>{item.cep}</Td>
+                        <Td>{item.bairro}</Td>
+                      </Tr>
+                    ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
           </ModalBody>
         </ModalContent>
       </Modal>
