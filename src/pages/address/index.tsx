@@ -70,7 +70,6 @@ export function SearchByAddress() {
       const response = await client.get(
         `/${search?.state}/${search?.county}/${search?.address}/json/`
       );
-      console.log(response.data);
 
       if (response.data?.erro || !response.data.length || !response.data[0].logradouro) {
         toast.error("Endereço não localizado!", {
@@ -145,6 +144,7 @@ export function SearchByAddress() {
   function closeModal() {
     setIsOpen(false);
   }
+  
   useEffect(() => {
     if (!states.length) getStates();
     if (search?.state && !search.county) getCounty();

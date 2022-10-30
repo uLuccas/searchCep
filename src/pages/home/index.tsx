@@ -41,12 +41,12 @@ export function Home() {
               mb: [5, 0],
               mr: ["0px", 5],
             }}
-            title="Buscar por CEP"
+            title="Busca por CEP"
             redirect="search"
           />
           <ButtonCustom
             style={{ ...buttonStyle, bg: "#ff7900", mr: "0px" }}
-            title="Encontrar CEP"
+            title="Localizar CEP"
             redirect="searchAddress"
           />
         </Flex>
