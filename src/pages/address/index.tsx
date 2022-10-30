@@ -54,7 +54,7 @@ interface IDataCounty {
 }
 
 export function SearchByAddress() {
-  const [search, setSearch] = useState<ISearchAddress>();
+  const [search, setSearch] = useState<ISearchAddress>({address:"",county:"",state:""});
   const [data, setData] = useState<Idata[]>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [states, setStates] = useState<IDataState[]>([]);
